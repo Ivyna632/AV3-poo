@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Participante {
     private int idParticipante;
     private String nomeParticipante;
@@ -54,10 +56,27 @@ public class Participante {
         return this.loginParticipante();
     }
     
-    //terminar método
-    public Boolean registrarParticipante() {
+    // métodos de login, registro e listagem
+    public Boolean loginParticipante(String login, String senha) {
+        return true;
+    }
+
+    public Boolean registrarParticipante(String nome, String login, String email, String telefone) {
         return true;
     }
     
+    //terminar método
+    public ArrayList<Participante> listarParticipantes() {
+        return null;
+    }
+
     //método mostrar 
+    public void mostrar() {
+        System.out.println("=== Detalhes do Participante ===");
+        System.out.println("ID: " + this.idParticipante);
+        System.out.println("Nome: " + this.nomeParticipante);
+        System.out.println("Email: " + this.email);
+        System.out.println("Telefone: " + this.telefone);
+        System.out.println("================================");
+    }
 }
