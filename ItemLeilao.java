@@ -1,86 +1,182 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 
 public class ItemLeilao {
+    
     private int idItem;
     private Leilao leilao;
     private String descricaoItem;
     private Double lanceMinimoItem;
     private Boolean itemArrematado;
     private Lance lanceArrematante;
-    //private ArrayList<Lance> historicoLances = new ArrayList<>(); (??)
 
-    //regras 
-    //“Registrado” – Quando for inserido e o início ainda não for registrado;
-    //“Agendado” – Quando for chamado o método iniciarLeilao e for inserido os seguintes atributos: dataInicioLeilao, horaInicioLeilao.
-    //“Finalizado” – Quando for chamado o método finalizarLeilao e for inserido os seguintes atributos: dataFimLeilao, horaFimLeilao.
-   
-   
-    //get/setters  
-    public int getidItem() {
+    //construtor
+    public ItemLeilao(int idItem, String descricaoItem, Double lanceMinimoItem, Leilao leilao) {
+        this.idItem = idItem;
+        this.descricaoItem = descricaoItem;
+        this.lanceMinimoItem = lanceMinimoItem;
+        this.leilao = leilao;
+        this.itemArrematado = false; // Padrão inicial
+        this.lanceArrematante = null; // Padrão inicial
+    }
+
+    //get/setters
+    public int getIdItem() {
         return idItem;
     }
-    public void setidItem(int idItem) {
+
+    public void setIdItem(int idItem) {
         this.idItem = idItem;
     }
-    public Leilao getleilao() {
-        return leilao;
-    }
-    public void setleilao(Leilao leilao) {
-        this.leilao = leilao;
-    }
-    public String getdescricaoItem() {
+
+    public String getDescricaoItem() {
         return descricaoItem;
     }
-    public void setdescricaoItem(String descricaoItem) {
+
+    public void setDescricaoItem(String descricaoItem) {
         this.descricaoItem = descricaoItem;
     }
-    public Double getlanceMinimoItem() {
+
+    public Double getLanceMinimoItem() {
         return lanceMinimoItem;
     }
-    public void setlanceMinimoItem(Double lanceMinimoItem) {
+
+    public void setLanceMinimoItem(Double lanceMinimoItem) {
         this.lanceMinimoItem = lanceMinimoItem;
     }
-    public Boolean getitemArrematado() {
+
+    public Boolean getItemArrematado() {
         return itemArrematado;
     }
-    public void setitemArrematado(Boolean itemArrematado) {
+
+    public void setItemArrematado(Boolean itemArrematado) {
         this.itemArrematado = itemArrematado;
     }
-    public Lance getlanceArrematante() {
+
+    public Leilao getLeilao() {
+        return leilao;
+    }
+
+    public void setLeilao(Leilao leilao) {
+        this.leilao = leilao;
+    }
+
+    public Lance getLanceArrematante() {
         return lanceArrematante;
     }
-    public void setlanceArrematante(Lance lanceArrematante) {
+
+    public void setLanceArrematante(Lance lanceArrematante) {
         this.lanceArrematante = lanceArrematante;
     }
 
-    //métodos de registro, consulta, arremate e listagem
-    public Boolean registrarItem() {
-        return true;
+    //métodos de registrar, consultar e listar itens
+
+    public Boolean registrarItem() throws Exception {
+        try (FileWriter fw = new FileWriter("itens.txt", true);
+             BufferedWriter bw = new BufferedWriter(fw)) {
+            
+            // Proteção para pegar ID do Leilão
+            int idLeilaoSalvar = (this.leilao != null) ? this.leilao.getIdLeilao() : 0;
+
+            // Proteção para pegar ID do Lance (se já foi arrematado)
+            int idLanceSalvar = 0;
+            if (this.lanceArrematante != null) {
+                idLanceSalvar = this.lanceArrematante.getIdLance();
+            }
+
+            String linha = this.idItem + "," +
+                           this.descricaoItem + "," + 
+                           this.lanceMinimoItem + "," + 
+                           this.itemArrematado + "," + 
+                           idLeilaoSalvar + "," + 
+                           idLanceSalvar;
+
+            bw.write(linha);
+            bw.newLine();
+            return true;
+        }
     }
-    public ItemLeilao consultarItem() {
-        return this;
-    }
+    
     public void arrematarItem(Lance lance) {
         this.itemArrematado = true;
-        System.out.println("Item arrematado com sucesso!");
+        this.lanceArrematante = lance;
     }
 
-    public ArrayList<ItemLeilao> listarItens() {
-        return this.listarItens();
-    }
+    public ItemLeilao consultarItem() throws Exception {
+        // Implementação básica de consulta lendo o arquivo
+        try (FileReader fr = new FileReader("itens.txt");
+             BufferedReader br = new BufferedReader(fr)) {
+            
+            String linha;
+            while ((linha = br.readLine()) != null) {
+                String[] dados = linha.split(",");
+                if (dados.length < 5) continue;
 
-    //metodo mostrar
-    public void mostrar() {
-        System.out.println("=== Detalhes do Item de Leilão ===");
-        System.out.println("ID Item: " + this.idItem);
-        System.out.println("Descrição Item: " + this.descricaoItem);
-        System.out.println("Lance Mínimo Item: " + this.lanceMinimoItem);
-        System.out.println("Item Arrematado: " + (this.itemArrematado ? "Sim" : "Não"));
-        
-        if (this.lanceArrematante != null) {
-            System.out.println("Lance Arrematante: " + this.lanceArrematante.getvalorLance());
-        } else {
-            System.out.println("Lance Arrematante: Nenhum");
+                int idLido = Integer.parseInt(dados[0]);
+
+                if (idLido == this.idItem) {
+                    // Reconstrói o Leilão usando o ID (usa o construtor da sua classe Leilao)
+                    Leilao l = new Leilao(Integer.parseInt(dados[4]));
+
+                    ItemLeilao item = new ItemLeilao(
+                        idLido,
+                        dados[1],
+                        Double.parseDouble(dados[2]),
+                        l
+                    );
+                    item.setItemArrematado(Boolean.parseBoolean(dados[3]));
+                    return item;
+                }
+            }
         }
+        return null;
+    }
+
+    public ArrayList<ItemLeilao> listarItens() throws Exception {
+        ArrayList<ItemLeilao> lista = new ArrayList<>();
+        
+        try (FileReader fr = new FileReader("itens.txt");
+             BufferedReader br = new BufferedReader(fr)) {
+            
+            String linha;
+            while ((linha = br.readLine()) != null) {
+                String[] dados = linha.split(",");
+                if (dados.length < 5) continue;
+
+                int id = Integer.parseInt(dados[0]);
+                String desc = dados[1];
+                Double min = Double.parseDouble(dados[2]);
+                Boolean arrematado = Boolean.parseBoolean(dados[3]);
+                int idLeilao = Integer.parseInt(dados[4]);
+
+                // Instancia um Leilao dummy para o construtor
+                Leilao leilaoDoItem = new Leilao(idLeilao);
+
+                ItemLeilao item = new ItemLeilao(id, desc, min, leilaoDoItem);
+                item.setItemArrematado(arrematado);
+
+                // Se houver ID de lance (coluna 5), não instanciamos o Lance completo
+                // para evitar loop infinito, mas a lógica do arquivo está preservada.
+
+                lista.add(item);
+            }
+        }
+        return lista;
+    }
+
+    //método mostrar
+    public void mostrar() {
+        System.out.println("=== Detalhes do Item ===");
+        System.out.println("ID Item: " + this.idItem);
+        System.out.println("Descrição: " + this.descricaoItem);
+        System.out.println("Lance Mínimo: R$ " + this.lanceMinimoItem);
+        System.out.println("Arrematado? " + (this.itemArrematado ? "Sim" : "Não"));
+        if (this.leilao != null) {
+            System.out.println("ID do Leilão: " + this.leilao.getIdLeilao());
+        }
+        System.out.println("========================");
     }
 }

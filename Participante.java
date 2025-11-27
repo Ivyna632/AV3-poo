@@ -1,3 +1,7 @@
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.util.ArrayList;
 
 public class Participante {
@@ -9,6 +13,18 @@ public class Participante {
     private String endereco;
     private String telefone;
 
+    //construtor 
+    public Participante(int idParticipante, String nomeParticipante, String loginParticipante, String senha, String email, String endereco,  String telefone) {
+        this.idParticipante = idParticipante;
+        this.nomeParticipante = nomeParticipante;
+        this.loginParticipante = loginParticipante;
+        this.senha = senha;
+        this.email = email;
+        this.endereco = endereco;
+        this.telefone = telefone;
+    }
+
+    //get/setters
     public int getidParticipante() {
         return idParticipante;
     }
@@ -51,26 +67,85 @@ public class Participante {
     public void settelefone(String telefone) {
         this.telefone =telefone;
     }
-
-    public Participante loginParticipante() {
-        return this.loginParticipante();
-    }
     
     // métodos de login, registro e listagem
-    public Boolean loginParticipante(String login, String senha) {
-        return true;
+
+    public Participante loginParticipante() throws Exception {
+        FileReader fr = new FileReader("participantes.txt");
+        BufferedReader br = new BufferedReader(fr);
+        String linha = "";
+        Participante participanteEncontrado = null;
+
+        while ((linha = br.readLine()) != null) {
+            String[] dados = linha.split(",");
+            if (dados.length < 7) continue;
+            
+            // Compara o login (2) e senha (4) do arquivo com os dados atuais
+            if (dados[2].equals(this.loginParticipante) && dados[4].equals(this.senha)) {
+                participanteEncontrado = new Participante(
+                    Integer.parseInt(dados[0]),
+                    dados[1],
+                    dados[2],
+                    dados[3],
+                    dados[4],
+                    dados[5],
+                    dados[6]
+                );
+                break;
+            }
+        }
+        
+        br.close();
+        return participanteEncontrado;
     }
 
-    public Boolean registrarParticipante(String nome, String login, String email, String telefone) {
+    //salva os dados 
+    public Boolean registrarParticipante() throws Exception {
+        FileWriter fw = new FileWriter("participantes.txt", true);
+        BufferedWriter bw = new BufferedWriter(fw);
+        
+        String linha = this.idParticipante + "," + 
+                       this.nomeParticipante + "," + 
+                       this.loginParticipante + "," + 
+                       this.email + "," + 
+                       this.senha + "," + 
+                       this.endereco + "," + 
+                       this.telefone;
+                        
+        bw.write(linha);
+        bw.newLine();
+        bw.close();
         return true;
     }
     
-    //terminar método
-    public ArrayList<Participante> listarParticipantes() {
-        return null;
+     public ArrayList<Participante> listarParticipantes() throws Exception {
+        ArrayList<Participante> lista = new ArrayList<>();
+        FileReader fr = new FileReader("participantes.txt");
+        BufferedReader br = new BufferedReader(fr);
+        String linha = "";
+
+        while ((linha = br.readLine()) != null) {
+            String[] dados = linha.split(",");
+            if (dados.length < 7) continue;
+
+            Participante p = new Participante(
+                Integer.parseInt(dados[0]),
+                dados[1],
+                dados[2],
+                dados[3],
+                dados[4],
+                dados[5],
+                dados[6]
+            );
+
+            lista.add(p);
+        }
+
+        br.close();
+        return lista;
     }
 
-    //método mostrar 
+    // Mostrar: Exibe os detalhes principais do participante no console
     public void mostrar() {
         System.out.println("=== Detalhes do Participante ===");
         System.out.println("ID: " + this.idParticipante);
